@@ -43,6 +43,28 @@ router.post('/', async (req, res) => {
         console.log(err);
         res.status(500).json(err);
     }
+});
+
+router.put('/:id', async (req, res) => {
+    try {
+        const updatedZoo = await update(req.params.id, req.body);
+        if (updatedZoo) return res.status(200).json(updatedZoo);
+        return res.status(400).json({ message: "Could not update."});
+    } catch(err) {
+        res.status(500).json(err);
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await remove(id);
+        if (result) return res.status(200).json({ message: "Zoo deleted."});
+        return res.status(400).json({ message: "Could not delete zoo."});
+    } catch(err) {
+        res.status(500).json(err);
+    }
 })
 
 // Helper methods
@@ -58,6 +80,17 @@ const add = async zoo => {
     const newUser = await db('zoos').insert(zoo);
 
     return find(newUser[0]);
+}
+
+const update = async (id, changes) => {
+    const result = await db('zoos').where({ id }).update(changes);
+
+    if (result) return find(id);
+    else return 0;
+}
+
+const remove = async id => {
+    return await db('zoos').where({ id }).del();
 }
 
 module.exports = router;
